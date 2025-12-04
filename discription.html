@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetBot Smart Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e6f7ff 0%, #b3e0ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #0066cc;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        p {
+            color: #555;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+        
+        .demo-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .demo-content h2 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        
+        .demo-content p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        /* Assistant Button */
+        .assistant-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #0066cc, #004d99);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .assistant-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .assistant-button svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+        
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            width: 400px;
+            height: 550px;
+            background-color: white;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        
+        .chat-widget.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+        
+        .chat-header {
+            background: linear-gradient(to right, #0066cc, #004d99);
+            color: white;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chat-header h2::before {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-color: #69f0ae;
+            border-radius: 50%;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .close-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: #0066cc;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .assistant-message {
+            align-self: flex-start;
+            background-color: #f7f7f8;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .sensitive-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            font-style: italic;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: #f7f7f8;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            color: #666;
+            font-style: italic;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input:focus {
+            border-color: #0066cc;
+        }
+        
+        .send-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .send-button:hover {
+            background-color: #004d99;
+        }
+        
+        .send-button:active {
+            transform: scale(0.95);
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 15px 15px;
+        }
+        
+        .suggestion {
+            background-color: #f7f7f8;
+            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .suggestion:hover {
+            background-color: #e9e9eb;
+        }
+        
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .disclaimer {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            padding: 10px 15px 0;
+            border-top: 1px solid #e5e5e5;
+            margin-top: 10px;
+        }
+        
+        .follow-up-questions {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border-left: 3px solid #0066cc;
+        }
+        
+        .follow-up-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .follow-up-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .follow-up-item {
+            font-size: 12px;
+            color: #0066cc;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .follow-up-item:hover {
+            background-color: #e6f2ff;
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 15px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .quick-action {
+            background-color: #e6f2ff;
+            border: 1px solid #0066cc;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: #004d99;
+        }
+        
+        .quick-action:hover {
+            background-color: #d1e7ff;
+        }
+        
+        .petbot-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .petbot-logo img {
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PetBot Smart Assistant</h1>
+        <p>Your AI assistant for all things related to pet PC bottles and animal care products</p>
+        
+        <div class="demo-content">
+            <h2>About PetBot Company</h2>
+            <p>PetBot specializes in manufacturing high-quality PC bottles designed specifically for animal care products. Our containers are durable, safe, and tailored to meet the needs of pet product manufacturers.</p>
+            <p>Our AI assistant can help with product information, ordering, technical specifications, and more.</p>
+        </div>
+    </div>
+    
+    <!-- Assistant Button -->
+    <div class="assistant-button" id="assistantButton">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 12H7v-2h10v2zm0-3H7v-2h10v2zm0-3H7V6h10v2z"/>
+        </svg>
+    </div>
+    
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <h2 class="petbot-logo">
+                <span>PetBot Assistant</span>
+            </h2>
+            <button class="close-button" id="closeButton">×</button>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-action">Product Catalog</button>
+            <button class="quick-action">Order Status</button>
+            <button class="quick-action">Technical Specs</button>
+            <button class="quick-action">Custom Orders</button>
+        </div>
+        
+        <div class="suggestions">
+            <button class="suggestion">What PC bottle sizes do you offer?</button>
+            <button class="suggestion">How to place a bulk order?</button>
+            <button class="suggestion">Are your bottles BPA-free?</button>
+            <button class="suggestion">Custom printing options</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant-message">
+                Hello! I'm your PetBot Assistant. I can help with product information, orders, technical specifications, and any questions about our pet PC bottles. How can I assist you today?
+                <div class="follow-up-questions">
+                    <div class="follow-up-title">You might ask about:</div>
+                    <div class="follow-up-list">
+                        <div class="follow-up-item">• Available PC bottle sizes and types</div>
+                        <div class="follow-up-item">• Customization and printing options</div>
+                        <div class="follow-up-item">• Bulk ordering and pricing</div>
+                        <div class="follow-up-item">• Material safety and certifications</div>
+                    </div>
+                </div>
+                <div class="message-time" id="initialTime"></div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            Assistant is thinking...
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="messageInput" placeholder="Type your message here...">
+            <button class="send-button" id="sendButton">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="disclaimer">
+            This assistant provides information about PetBot products. For specific technical or order inquiries, our team will follow up directly.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const assistantButton = document.getElementById('assistantButton');
+            const chatWidget = document.getElementById('chatWidget');
+            const closeButton = document.getElementById('closeButton');
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const suggestions = document.querySelectorAll('.suggestion');
+            const quickActions = document.querySelectorAll('.quick-action');
+            
+            // Set initial time
+            document.getElementById('initialTime').textContent = getCurrentTime();
+            
+            // Open chat widget
+            assistantButton.addEventListener('click', function() {
+                chatWidget.classList.add('active');
+                messageInput.focus();
+            });
+            
+            // Close chat widget
+            closeButton.addEventListener('click', function() {
+                chatWidget.classList.remove('active');
+            });
+            
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Send message on Enter key
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Add click events to suggestion buttons
+            suggestions.forEach(button => {
+                button.addEventListener('click', function() {
+                    messageInput.value = this.textContent;
+                    sendMessage();
+                });
+            });
+            
+            // Add click events to quick action buttons
+            quickActions.forEach(button => {
+                button.addEventListener('click', function() {
+                    const topic = this.textContent;
+                    let message = "";
+                    
+                    switch(topic) {
+                        case "Product Catalog":
+                            message = "Can you show me your product catalog?";
+                            break;
+                        case "Order Status":
+                            message = "I'd like to check my order status";
+                            break;
+                        case "Technical Specs":
+                            message = "What are the technical specifications of your PC bottles?";
+                            break;
+                        case "Custom Orders":
+                            message = "Do you offer custom orders for PC bottles?";
+                            break;
+                    }
+                    
+                    messageInput.value = message;
+                    sendMessage();
+                });
+            });
+            
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                messageInput.value = '';
+                
+                // Show typing indicator
+                typingIndicator.style.display = 'block';
+                scrollToBottom();
+                
+                // Simulate AI response after a delay
+                setTimeout(() => {
+                    typingIndicator.style.display = 'none';
+                    const response = generatePetBotResponse(message);
+                    addMessage(response.text, 'assistant', response.note, response.followUp);
+                }, 1000 + Math.random() * 2000);
+            }
+            
+            function addMessage(text, sender, note = null, followUp = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.classList.add(sender === 'user' ? 'user-message' : 'assistant-message');
+                
+                let messageHTML = text;
+                
+                if (followUp) {
+                    messageHTML += `<div class="follow-up-questions">
+                        <div class="follow-up-title">You might want to know:</div>
+                        <div class="follow-up-list">`;
+                    
+                    followUp.forEach(item => {
+                        messageHTML += `<div class="follow-up-item" onclick="document.getElementById('messageInput').value = '${item}'; document.getElementById('sendButton').click();">• ${item}</div>`;
+                    });
+                    
+                    messageHTML += `</div></div>`;
+                }
+                
+                if (note) {
+                    messageHTML += `<div class="sensitive-note">${note}</div>`;
+                }
+                
+                messageHTML += `<div class="message-time">${getCurrentTime()}</div>`;
+                
+                messageDiv.innerHTML = messageHTML;
+                chatMessages.appendChild(messageDiv);
+                scrollToBottom();
+            }
+            
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function getCurrentTime() {
+                const now = new Date();
+                return now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0');
+            }
+            
+            function generatePetBotResponse(userMessage) {
+                const message = userMessage.toLowerCase();
+                
+                // Product catalog
+                if (message.includes('catalog') || message.includes('products') || message.includes('offer')) {
+                    return {
+                        text: "PetBot offers a wide range of PC bottles specifically designed for pet care products. Our catalog includes sizes from 50ml to 1000ml, with various neck finishes, colors, and customization options. All our bottles are BPA-free and designed to meet industry safety standards.",
+                        note: "Providing product catalog information",
+                        followUp: [
+                            "What sizes are available?",
+                            "Do you offer custom colors?",
+                            "What are your minimum order quantities?"
+                        ]
+                    };
+                }
+                
+                // Bottle sizes
+                if (message.includes('size') || message.includes('capacity') || message.includes('ml')) {
+                    return {
+                        text: "We offer PC bottles in the following standard sizes: 50ml, 100ml, 250ml, 500ml, and 1000ml. Custom sizes are also available for bulk orders. Each size comes with appropriate neck finishes for secure sealing with various closure types.",
+                        note: "Listing available bottle sizes",
+                        followUp: [
+                            "What closure types do you offer?",
+                            "Can I get samples of different sizes?",
+                            "What are the dimensions for each size?"
+                        ]
+                    };
+                }
+                
+                // Order information
+                if (message.includes('order') || message.includes('purchase') || message.includes('buy')) {
+                    return {
+                        text: "To place an order, you can contact our sales team directly. For standard products, our minimum order quantity is 1000 units. Bulk orders receive discounted pricing. We also offer custom printing, colors, and branding options for orders over 5000 units.",
+                        note: "Providing ordering information",
+                        followUp: [
+                            "What is your pricing for bulk orders?",
+                            "How long does production take?",
+                            "Do you offer international shipping?"
+                        ]
+                    };
+                }
+                
+                // Material safety
+                if (message.includes('bpa') || message.includes('safe') || message.includes('material')) {
+                    return {
+                        text: "All PetBot PC bottles are manufactured using BPA-free materials that meet international safety standards for pet care products. Our bottles are durable, chemical-resistant, and designed to protect the integrity of your pet care formulations.",
+                        note: "Confirming material safety standards",
+                        followUp: [
+                            "Do you have safety certifications?",
+                            "Are the bottles recyclable?",
+                            "What temperature range do they withstand?"
+                        ]
+                    };
+                }
+                
+                // Customization
+                if (message.includes('custom') || message.includes('printing') || message.includes('brand')) {
+                    return {
+                        text: "We offer comprehensive customization options including silk-screen printing, hot stamping, and label application. Custom colors, shapes, and special neck finishes are available for bulk orders. Our design team can help create unique packaging solutions for your pet care brand.",
+                        note: "Detailing customization options",
+                        followUp: [
+                            "What is the cost for custom printing?",
+                            "Can you match specific Pantone colors?",
+                            "Do you offer design services?"
+                        ]
+                    };
+                }
+                
+                // Technical specifications
+                if (message.includes('technical') || message.includes('spec') || message.includes('specification')) {
+                    return {
+                        text: "Our PC bottles feature excellent clarity, high impact resistance, and good chemical stability. They can withstand temperatures from -40°C to 120°C. All bottles are manufactured with consistent wall thickness and are compatible with most common pet care product formulations.",
+                        note: "Providing technical specifications",
+                        followUp: [
+                            "What are the weight tolerances?",
+                            "Are the bottles UV resistant?",
+                            "What closure systems are compatible?"
+                        ]
+                    };
+                }
+                
+                // Shipping and delivery
+                if (message.includes('shipping') || message.includes('delivery') || message.includes('lead time')) {
+                    return {
+                        text: "Standard lead time for production is 4-6 weeks after order confirmation. We ship worldwide and work with reliable logistics partners to ensure safe delivery. Shipping costs depend on order volume and destination. Expedited production is available for urgent requirements.",
+                        note: "Providing shipping and delivery information",
+                        followUp: [
+                            "What are your shipping methods?",
+                            "Do you provide tracking information?",
+                            "What is the cost for expedited production?"
+                        ]
+                    };
+                }
+                
+                // Greetings
+                if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                    return {
+                        text: "Hello! Welcome to PetBot. I'm here to assist with all your questions about our PC bottles for pet care products. How can I help you today?",
+                        note: "PetBot specialized greeting",
+                        followUp: [
+                            "Tell me about your products",
+                            "I need pricing information",
+                            "How do I place an order?"
+                        ]
+                    };
+                }
+                
+                // Help question
+                if (message.includes('what can you do') || message.includes('help')) {
+                    return {
+                        text: "I can provide information about PetBot's PC bottle products, including specifications, pricing, customization options, and ordering processes. I can also connect you with our sales team for specific inquiries.",
+                        note: "Explaining assistant capabilities",
+                        followUp: [
+                            "What bottle sizes do you offer?",
+                            "Can I get custom printing?",
+                            "How do I request samples?"
+                        ]
+                    };
+                }
+                
+                // Default responses with multiple follow-up questions
+                const petBotResponses = [
+                    {
+                        text: "Thank you for your interest in PetBot products. I'd be happy to provide more specific information about our PC bottles for pet care applications. Could you tell me more about your specific needs?",
+                        note: "Requesting more specific information",
+                        followUp: [
+                            "I need bottles for pet shampoo",
+                            "I'm looking for travel-sized containers",
+                            "I need custom branded packaging"
+                        ]
+                    },
+                    {
+                        text: "I understand you're inquiring about our pet care packaging solutions. PetBot specializes in high-quality PC bottles designed specifically for the pet product industry. How can I assist you further?",
+                        note: "Redirecting to pet-specific solutions",
+                        followUp: [
+                            "What makes your bottles suitable for pets?",
+                            "Do you have experience with pet product brands?",
+                            "Can you provide references?"
+                        ]
+                    }
+                ];
+                
+                return petBotResponses[Math.floor(Math.random() * petBotResponses.length)];
+            }
+        });
+    </script>
+</body>
+</html>

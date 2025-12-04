@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetBoot - Smart Pet Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .product-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Product Layout */
+        .product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .product-details {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Product Images */
+        .product-images {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #4a6cf7, #6a11cb);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .main-image img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .image-thumbnails {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s, border 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .thumbnail.active {
+            border-color: #4a6cf7;
+        }
+        
+        .thumbnail:hover {
+            transform: scale(1.05);
+        }
+        
+        .thumbnail img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        /* Product Info */
+        .product-info h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .product-brand {
+            color: #4a6cf7;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .product-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stars {
+            color: #ffc107;
+            margin-right: 0.5rem;
+        }
+        
+        .rating-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .product-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4a6cf7;
+            margin-bottom: 1.5rem;
+        }
+        
+        .product-description {
+            color: #555;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        
+        /* Product Features */
+        .features {
+            margin-bottom: 2rem;
+        }
+        
+        .features h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .feature-list i {
+            color: #4a6cf7;
+            margin-right: 0.8rem;
+            margin-top: 0.2rem;
+        }
+        
+        /* Product Options */
+        .product-options {
+            margin-bottom: 2rem;
+        }
+        
+        .option-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .option-group h4 {
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+        
+        .color-options {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.3s;
+        }
+        
+        .color-option.active {
+            border-color: #4a6cf7;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .size-options {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .size-option {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .size-option.active {
+            border-color: #4a6cf7;
+            background: #4a6cf7;
+            color: white;
+        }
+        
+        .size-option:hover {
+            border-color: #4a6cf7;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #4a6cf7;
+            color: white;
+            flex: 2;
+        }
+        
+        .btn-primary:hover {
+            background: #3a5ce5;
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #333;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: #e4e6e9;
+        }
+        
+        /* Additional Info */
+        .additional-info {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .info-tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            color: #4a6cf7;
+            border-bottom-color: #4a6cf7;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .specs-table tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .specs-table td {
+            padding: 1rem 0;
+        }
+        
+        .specs-table td:first-child {
+            font-weight: 600;
+            width: 30%;
+        }
+        
+        .reviews {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .review {
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .review:last-child {
+            border-bottom: none;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+        }
+        
+        .review-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .review-rating {
+            color: #ffc107;
+            margin-bottom: 0.5rem;
+        }
+        
+        .review-text {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-container">
+        <div class="product-details">
+            <!-- Product Images -->
+            <div class="product-images">
+                <div class="main-image">
+                    <img src="https://images.unsplash.com/photo-1576201839700-8e9278b6b14a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="PetBoot GPS Tracker">
+                </div>
+                <div class="image-thumbnails">
+                    <div class="thumbnail active">
+                        <img src="https://images.unsplash.com/photo-1576201839700-8e9278b6b14a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Product View 1">
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Product View 2">
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://images.unsplash.com/photo-1589924691995-400dc9ecc119?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Product View 3">
+                    </div>
+                    <div class="thumbnail">
+                        <img src="https://images.unsplash.com/photo-1591946614720-90a587da4a36?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Product View 4">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Information -->
+            <div class="product-info">
+                <h1>PetBoot GPS Tracker</h1>
+                <div class="product-brand">by PetBoot</div>
+                
+                <div class="product-rating">
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <div class="rating-count">(428 reviews)</div>
+                </div>
+                
+                <div class="product-price">$129.99</div>
+                
+                <div class="product-description">
+                    The PetBoot GPS Tracker is the ultimate solution for pet owners who want peace of mind. With real-time location tracking, activity monitoring, and geofencing alerts, you'll always know where your furry friend is and how they're doing.
+                </div>
+                
+                <div class="features">
+                    <h3>Key Features</h3>
+                    <ul class="feature-list">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Real-time GPS tracking with mobile app</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Activity monitoring and health insights</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Geofencing with escape alerts</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Waterproof and durable design</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Long battery life (up to 7 days)</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Lightweight and comfortable for pets</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="product-options">
+                    <div class="option-group">
+                        <h4>Color</h4>
+                        <div class="color-options">
+                            <div class="color-option active" style="background-color: #4a6cf7;" title="Blue"></div>
+                            <div class="color-option" style="background-color: #333;" title="Black"></div>
+                            <div class="color-option" style="background-color: #ff6b6b;" title="Red"></div>
+                            <div class="color-option" style="background-color: #51cf66;" title="Green"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="option-group">
+                        <h4>Size</h4>
+                        <div class="size-options">
+                            <div class="size-option active">Small (5-15 lbs)</div>
+                            <div class="size-option">Medium (15-40 lbs)</div>
+                            <div class="size-option">Large (40-80 lbs)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i>
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="far fa-heart"></i>
+                        Wishlist
+                    </button>
+                </div>
+                
+                <div class="shipping-info">
+                    <p><i class="fas fa-shipping-fast"></i> Free shipping on orders over $50</p>
+                    <p><i class="fas fa-undo-alt"></i> 30-day money-back guarantee</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Information Tabs -->
+        <div class="additional-info">
+            <div class="info-tabs">
+                <div class="tab active" data-tab="description">Description</div>
+                <div class="tab" data-tab="specifications">Specifications</div>
+                <div class="tab" data-tab="reviews">Reviews (428)</div>
+            </div>
+            
+            <div class="tab-content active" id="description">
+                <h3>About the PetBoot GPS Tracker</h3>
+                <p>The PetBoot GPS Tracker is designed with both pets and owners in mind. Using advanced GPS technology, it provides accurate real-time location data directly to your smartphone. Whether your pet is in the backyard or on an adventure, you'll always know their whereabouts.</p>
+                
+                <p>Beyond location tracking, the PetBoot monitor's your pet's activity levels, providing insights into their health and wellbeing. The geofencing feature allows you to set safe zones and receive instant alerts if your pet leaves those areas.</p>
+                
+                <p>With a durable, waterproof design and long-lasting battery, the PetBoot GPS Tracker is the reliable companion your pet needs for their adventures and your peace of mind.</p>
+            </div>
+            
+            <div class="tab-content" id="specifications">
+                <table class="specs-table">
+                    <tr>
+                        <td>Battery Life</td>
+                        <td>Up to 7 days on a single charge</td>
+                    </tr>
+                    <tr>
+                        <td>Charging Time</td>
+                        <td>2 hours</td>
+                    </tr>
+                    <tr>
+                        <td>Weight</td>
+                        <td>1.2 oz (34g)</td>
+                    </tr>
+                    <tr>
+                        <td>Water Resistance</td>
+                        <td>IP67 (Waterproof up to 1 meter for 30 minutes)</td>
+                    </tr>
+                    <tr>
+                        <td>Connectivity</td>
+                        <td>4G LTE, Wi-Fi, Bluetooth</td>
+                    </tr>
+                    <tr>
+                        <td>Compatibility</td>
+                        <td>iOS 12+, Android 8+</td>
+                    </tr>
+                    <tr>
+                        <td>Tracking Accuracy</td>
+                        <td>Within 10 feet</td>
+                    </tr>
+                    <tr>
+                        <td>Subscription</td>
+                        <td>Required for cellular connectivity ($9.99/month)</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="tab-content" id="reviews">
+                <div class="reviews">
+                    <div class="review">
+                        <div class="review-header">
+                            <div class="reviewer-name">Sarah Johnson</div>
+                            <div class="review-date">March 15, 2023</div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="review-text">
+                            This tracker has given me so much peace of mind! My adventurous golden retriever used to wander off, but now I can always find him. The battery lasts a full week, and the app is very user-friendly.
+                        </div>
+                    </div>
+                    
+                    <div class="review">
+                        <div class="review-header">
+                            <div class="reviewer-name">Michael Chen</div>
+                            <div class="review-date">February 28, 2023</div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <div class="review-text">
+                            Great product overall. The tracking is accurate, and I love the activity monitoring feature. My only complaint is that the monthly subscription is a bit pricey, but it's worth it for the peace of mind.
+                        </div>
+                    </div>
+                    
+                    <div class="review">
+                        <div class="review-header">
+                            <div class="reviewer-name">Emily Rodriguez</div>
+                            <div class="review-date">January 10, 2023</div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <div class="review-text">
+                            The PetBoot tracker helped me find my cat when he got out last month. The geofencing alert went off immediately, and I was able to locate him within minutes. Highly recommend for any pet owner!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Thumbnail selection
+        document.querySelectorAll('.thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const mainImg = document.querySelector('.main-image img');
+                const thumbImg = this.querySelector('img');
+                mainImg.src = thumbImg.src;
+            });
+        });
+        
+        // Color selection
+        document.querySelectorAll('.color-option').forEach(color => {
+            color.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Size selection
+        document.querySelectorAll('.size-option').forEach(size => {
+            size.addEventListener('click', function() {
+                document.querySelectorAll('.size-option').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update active content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Add to cart animation
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Added to Cart!';
+            this.style.background = '#2ed573';
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.style.background = '';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
